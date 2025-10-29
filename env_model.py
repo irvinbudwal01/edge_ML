@@ -78,4 +78,10 @@ test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
 
 print(f'\nTest accuracy: {test_acc}')
 
+#model.save("saved_env_model.keras")
+
+loaded_model = tf.keras.models.load_model("saved_env_model.keras")
+
+predictions = loaded_model.predict(X_test, batch_size=32, verbose=1)
+
 
