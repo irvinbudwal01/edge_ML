@@ -33,7 +33,7 @@ df['Air_Quality_Index'] = np.mean(scaled_features, axis=1)
 df['Air_Quality_Category'] = pd.cut(df['Air_Quality_Index'], bins=[-np.inf,-1,0,1,np.inf], labels=['Very Poor', 'Poor', 'Moderate', 'Good'])
 
 X = df[numeric_columns]
-y= df['Air_Quality_Category']
+y = df['Air_Quality_Category']
 
 from tensorflow.keras.utils import to_categorical
 
@@ -47,21 +47,53 @@ interpreter = tf.lite.Interpreter(model_path="env_model.tflite")
 
 interpreter.allocate_tensors()
 
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-#print(output_details)
+input_details = interpreter.get_input_details()[0]
+output_details = interpreter.get_output_details()[0]
+#print(input_details)
 
 #input_shape = input_details[0]['shape']
-
 np_features = np.array(X_test, dtype=np.float32)
-#print(np_features)
-np_features = np.expand_dims(np_features, axis=0)
-#print(np_features)
-interpreter.set_tensor(input_details[0]['index'], np_features)
+#np_features = np.expand_dims(np_features, axis=0)
 
-interpreter.invoke()
+inp_idx, out_idx = input_details["index"], output_details["index"]
 
-output_data = interpreter.get_tensor(output_details[0]['index'])
+preds = []
+for i in range(np_features.shape[0]):
+    x1 = np_features[i:i+1]                  # shape (1, 15)
+    interpreter.set_tensor(inp_idx, x1)
+    interpreter.invoke()
+    y = interpreter.get_tensor(out_idx)
+    predicted_class = np.argmax(y)
+    preds.append(predicted_class)
 
-print("Inference Output is {}".format(output_data))
+#preds = np.concatenate(preds, axis=0)  # shape depends on your model’s output
+#print(preds.shape)
+print("Inference output is {}".format(preds))
+
+#print("IN:", input_details["dtype"], "quant:", input_details["quantization"], input_details.get("quantization_parameters", {}))
+#print("OUT:", output_details["dtype"], "quant:", output_details["quantization"], output_details.get("quantization_parameters", {}))
+#if y.ndim == 2:
+#    y_true_idx = np.argmax(y, axis=1)
+#else:
+#    y_true_idx = y_true.astype(int)
+
+#y_pred = np.argmax(preds, axis=1)                     # argmax over classes only
+
+accuracy = accuracy_score(y_test, preds)
+print(f"TFLite Model Acc: {accuracy:.4f}")
+
+# --- Accuracy & diagnostics ---
+#acc = (y_pred == y_true_idx).mean()
+#print(f"Accuracy (no activation): {acc:.4f}")
+
+#unique, counts = np.unique(y_pred, return_counts=True)
+#print("Predicted class histogram:", dict(zip(unique.tolist(), counts.tolist())))
+
+#interpreter.set_tensor(input_details[0]['index'], np_features)
+
+#interpreter.invoke()
+
+#output_data = interpreter.get_tensor(output_details[0]['index'])
+
+#print("Inference Output is {}".format(output_data))
 
