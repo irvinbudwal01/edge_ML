@@ -1,6 +1,8 @@
 import tensorflow as tf
 
-keras_model = tf.keras.models.load_model("saved_env_model.keras")
+#keras_model = tf.keras.models.load_model("saved_env_model.keras")
+
+keras_model = tf.keras.models.load_model("saved_pdm_model.keras")
 
 converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
 
@@ -11,5 +13,8 @@ converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
 
 tf_lite_model = converter.convert()
 
-with open('env_model.tflite', 'wb') as f:
+#with open('env_model.tflite', 'wb') as f:
+#    f.write(tf_lite_model)
+
+with open('pdm_model.tflite', 'wb') as f:
     f.write(tf_lite_model)
