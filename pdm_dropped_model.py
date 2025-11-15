@@ -45,4 +45,4 @@ print(f'\nTest accuracy: {test_acc}')
 #print('ROC AUC Score:', roc_auc_score(y_test, y_pred))
 #print(confusion_matrix(y_test, y_pred))
 
-model.save("saved_pdm_model.keras")
+model.save("saved_pdm_dropped_model.keras")
