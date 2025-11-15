@@ -12,7 +12,8 @@ data.drop(columns=['UDI', 'Product ID'], inplace=True)
 le = LabelEncoder()
 data['Type'] = le.fit_transform(data['Type'])
 
-X = data.drop(columns=['Machine failure'])
+#drop everything after machine failure for dropped model params
+X = data.drop(columns=['Machine failure', 'Process temperature [K]', 'Tool wear [min]', 'Torque [Nm]', 'TWF', 'HDF'])
 y = data['Machine failure']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -22,7 +23,9 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-interpreter = tf.lite.Interpreter(model_path="pdm_model.tflite")
+#interpreter = tf.lite.Interpreter(model_path="pdm_model.tflite")
+
+interpreter = tf.lite.Interpreter(model_path="pdm_dropped_model.tflite")
 
 interpreter.allocate_tensors()
 
