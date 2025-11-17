@@ -13,10 +13,10 @@ df = pd.read_csv('air_quality_dataset.csv')
 df['DATEOFF'] = pd.to_datetime(df['DATEOFF'], errors='coerce')
 df['DATEON'] = pd.to_datetime(df['DATEON'], errors='coerce')
 
-#numeric_columns = df.columns.drop(['SITE_ID', 'DATEOFF', 'DATEON']).tolist()
+numeric_columns = df.columns.drop(['SITE_ID', 'DATEOFF', 'DATEON']).tolist()
 #for dropped model
 
-numeric_columns = df.columns.drop(['SITE_ID', 'DATEOFF', 'DATEON', 'Week', 'Year', 'SO4', 'HNO3', 'K', 'NH4', 'SO2']).tolist()
+#numeric_columns = df.columns.drop(['SITE_ID', 'DATEOFF', 'DATEON', 'Week', 'Year', 'SO4', 'HNO3', 'K', 'NH4', 'SO2']).tolist()
 
 for column in numeric_columns:
     df[column] = pd.to_numeric(df[column], errors='coerce')
@@ -48,7 +48,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2, random_s
 
 #interpreter = tf.lite.Interpreter(model_path="env_model.tflite")
 
-interpreter = tf.lite.Interpreter(model_path="env_dropped_model.tflite")
+#interpreter = tf.lite.Interpreter(model_path="env_dropped_model.tflite")
+
+interpreter = tf.lite.Interpreter(model_path="env_student_model.tflite")
 
 interpreter.allocate_tensors()
 
