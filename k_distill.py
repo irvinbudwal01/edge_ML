@@ -81,8 +81,8 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-student = keras.Sequential([keras.layers.Dense(64, activation="relu", input_shape=(X_train.shape[1],)),
-    keras.layers.Dense(16, activation="relu"),
+student = keras.Sequential([keras.layers.Dense(4, activation="relu", input_shape=(X_train.shape[1],)),
+    keras.layers.Dense(2, activation="relu"),
     keras.layers.Dense(1, activation="sigmoid")])
 
 student_scratch = keras.models.clone_model(student)

@@ -12,6 +12,8 @@ import tensorflow as tf
 
 keras_model = tf.keras.models.load_model("saved_pdm_student_dropped_model.keras")
 
+#keras_model = tf.keras.models.load_model("saved_env_student_dropped_model.keras")
+
 converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
 
 #converter.optimizations = [tf.lite.Optimize.DEFAULT]

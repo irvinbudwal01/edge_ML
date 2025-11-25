@@ -104,7 +104,7 @@ X = scaled_features.astype('float32')
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-student = keras.Sequential([keras.layers.Dense(64, activation="relu", input_shape=(X_train.shape[1],)), keras.layers.Dense(32, activation="relu"), keras.layers.Dense(4, activation="softmax")])
+student = keras.Sequential([keras.layers.Dense(16, activation="relu", input_shape=(X_train.shape[1],)), keras.layers.Dense(8, activation="relu"), keras.layers.Dense(4, activation="softmax")])
 
 student_scratch = keras.models.clone_model(student)
 

@@ -8,11 +8,10 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_auc_sco
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+import numpy as np
 #keras_model = tf.keras.models.load_model("saved_env_model.keras")
 
-#keras_model = tf.keras.models.load_model("saved_pdm_model.keras")
-
-keras_model = tf.keras.models.load_model("saved_pdm_dropped_model.keras")
+keras_model = tf.keras.models.load_model("saved_env_dropped_model.keras")
 
 class Distiller(tf.keras.Model):
     def __init__(self, student, teacher):
@@ -36,7 +35,7 @@ class Distiller(tf.keras.Model):
             student_predictions = self.student(x, training=True)
             student_loss = self.student_loss_fn(y, student_predictions)
             
-            distillation_loss = (self.distillation_loss_fn(tf.nn.sigmoid(teacher_predictions / self.temperature), tf.nn.sigmoid(student_predictions / self.temperature),))
+            distillation_loss = (self.distillation_loss_fn(tf.nn.softmax(teacher_predictions / self.temperature, axis=1), tf.nn.softmax(student_predictions / self.temperature, axis=1),))
             loss = self.alpha * student_loss + (1 - self.alpha) * distillation_loss
 
         trainable_vars = self.student.trainable_variables
@@ -69,31 +68,51 @@ teacher = keras_model
 
 #student_scratch = keras.models.clone_model(student)
 
-data = pd.read_csv("ai 2020.csv")
-data.drop(columns=['UDI','Product ID'],inplace=True)
+df = pd.read_csv('air_quality_dataset.csv')
 
-le = LabelEncoder()
-data['Type'] = le.fit_transform(data['Type'])
+df['DATEOFF'] = pd.to_datetime(df['DATEOFF'], errors='coerce')
+df['DATEON'] = pd.to_datetime(df['DATEON'], errors='coerce')
 
-X = data.drop(columns=['Machine failure', 'Process temperature [K]', 'Tool wear [min]', 'Torque [Nm]', 'TWF', 'HDF'])
-y = data['Machine failure']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+numeric_columns = df.columns.drop(['SITE_ID', 'DATEOFF', 'DATEON', 'Week', 'Year', 'SO4', 'HNO3', 'K', 'NH4', 'SO2']).tolist()
+
+for column in numeric_columns:
+    df[column] = pd.to_numeric(df[column], errors='coerce')
+
+#https://www.kaggle.com/code/atifmasih/air-qaulity-categorization-using-randomforest-94
+
+means = df.select_dtypes(include=['int64','float64']).mean()
+
+df = df.fillna(means)
+
+numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
 
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
 
-student = keras.Sequential([keras.layers.Dense(4, activation="relu", input_shape=(X_train.shape[1],)),
-    keras.layers.Dense(2, activation="relu"),
-    keras.layers.Dense(1, activation="sigmoid")])
+scaled_features = scaler.fit_transform(df[numeric_columns])
+df['Air_Quality_Index'] = np.mean(scaled_features, axis=1)
+
+df['Air_Quality_Category'] = pd.cut(df['Air_Quality_Index'], bins=[-np.inf, -1, 0, 1, np.inf], labels=['Very Poor', 'Poor', 'Moderate', 'Good'])
+
+X = df[numeric_columns]
+y = df['Air_Quality_Category']
+
+from tensorflow.keras.utils import to_categorical
+
+y = df['Air_Quality_Category'].cat.codes.astype('int32')
+
+X = scaled_features.astype('float32')
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+student = keras.Sequential([keras.layers.Dense(16, activation="relu", input_shape=(X_train.shape[1],)), keras.layers.Dense(8, activation="relu"), keras.layers.Dense(4, activation="softmax")])
 
 student_scratch = keras.models.clone_model(student)
 
 distiller = Distiller(student=student, teacher=teacher)
 
 distiller.compile(optimizer=keras.optimizers.Adam(),
-        metrics=[keras.metrics.BinaryAccuracy()],
-        student_loss_fn=keras.losses.BinaryCrossentropy(),
+        metrics=[keras.metrics.SparseCategoricalAccuracy()],
+        student_loss_fn=keras.losses.SparseCategoricalCrossentropy(),
         distillation_loss_fn=keras.losses.KLDivergence(),
         alpha=.1,
         temperature=10,)
@@ -102,14 +121,14 @@ distiller.fit(X_train, y_train, epochs=20)
 
 student.compile(
     optimizer=keras.optimizers.Adam(),
-    loss=keras.losses.BinaryCrossentropy(),
-    metrics=[keras.metrics.BinaryAccuracy()],
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    metrics=[keras.metrics.SparseCategoricalAccuracy()],
 )
 student.evaluate(X_test, y_test)
 
 teacher.evaluate(X_test, y_test)
 
-student.save("saved_pdm_student_dropped_model.keras")
+student.save("saved_env_student_dropped_model.keras")
 
 #keras_model = tf.keras.models.load_model("saved_env_dropped_model.keras")
 
