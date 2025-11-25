@@ -80,8 +80,8 @@ print(f'\nTest accuracy: {test_acc}')
 
 #model.save("saved_env_model.keras")
 
-loaded_model = tf.keras.models.load_model("saved_env_model.keras")
+#loaded_model = tf.keras.models.load_model("saved_env_model.keras")
 
-predictions = loaded_model.predict(X_test, batch_size=32, verbose=1)
+#predictions = loaded_model.predict(X_test, batch_size=32, verbose=1)
 
 
