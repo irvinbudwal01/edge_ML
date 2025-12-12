@@ -107,7 +107,7 @@ student.evaluate(X_test, y_test)
 
 teacher.evaluate(X_test, y_test)
 
-student.save("saved_pdm_student_model.keras")
+#student.save("saved_pdm_student_model.keras")
 
 #keras_model = tf.keras.models.load_model("saved_env_dropped_model.keras")
 

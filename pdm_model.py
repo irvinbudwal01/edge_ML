@@ -25,9 +25,15 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-model = keras.Sequential([keras.layers.Dense(128, activation="relu", input_shape=(X_train.shape[1],)),
-    keras.layers.Dense(64, activation="relu"),
+#model = keras.Sequential([keras.layers.Dense(128, activation="relu", input_shape=(X_train.shape[1],)),
+#    keras.layers.Dense(64, activation="relu"),
+#    keras.layers.Dense(1, activation="sigmoid")])
+
+model = keras.Sequential([keras.layers.Dense(4, activation="relu", input_shape=(X_train.shape[1],)),
+    keras.layers.Dense(2, activation="relu"),
     keras.layers.Dense(1, activation="sigmoid")])
+
+
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -47,3 +53,10 @@ print(f'\nTest accuracy: {test_acc}')
 
 #model.save("saved_pdm_model.keras")
 
+#loaded_model = tf.keras.models.load_model("saved_pdm_student_model.keras")
+
+#predictions = loaded_model.predict(X_test, batch_size=32, verbose=1)
+
+#tested_model_loss, tested_model_acc = loaded_model.evaluate(X_test, y_test, verbose=2)
+
+#print(f"LOADED MODEL: {tested_model_acc}")
