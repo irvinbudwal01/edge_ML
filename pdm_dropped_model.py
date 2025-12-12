@@ -17,7 +17,8 @@ data.drop(columns=['UDI','Product ID'], inplace=True)
 le = LabelEncoder()
 data['Type'] = le.fit_transform(data['Type'])
 
-X = data.drop(columns=['Machine failure', 'Process temperature [K]', 'Tool wear [min]', 'Torque [Nm]', 'TWF', 'HDF'])
+#X = data.drop(columns=['Machine failure', 'Process temperature [K]', 'Tool wear [min]', 'Torque [Nm]', 'TWF', 'HDF'])
+X = data.drop(columns=['Machine failure', 'TWF', 'HDF', 'PWF','OSF','RNF'])
 y = data['Machine failure']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -45,4 +46,10 @@ print(f'\nTest accuracy: {test_acc}')
 #print('ROC AUC Score:', roc_auc_score(y_test, y_pred))
 #print(confusion_matrix(y_test, y_pred))
 
-model.save("saved_pdm_dropped_model.keras")
+#model.save("saved_pdm_dropped_model.keras")
+
+#loaded_model = tf.keras.models.load_model("saved_pdm_student_dropped_model.keras")
+
+#tested_model_loss, tested_model_acc = loaded_model.evaluate(X_test, y_test, verbose=2)
+
+#print(f"Loaded Model Acc: {tested_model_acc}")

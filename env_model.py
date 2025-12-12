@@ -45,15 +45,12 @@ df['Air_Quality_Category'] = pd.cut(df['Air_Quality_Index'], bins=[-np.inf, -1, 
 
 X = df[numeric_columns]
 y = df['Air_Quality_Category']
-
 from tensorflow.keras.utils import to_categorical
 
 y = df['Air_Quality_Category'].cat.codes.astype('int32')
-
 X = scaled_features.astype('float32')
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 #from sklearn.ensemble import RandomForestClassifier
 #from sklearn.metrics import accuracy_score, classification_report
 
@@ -68,7 +65,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 #print("Accuracy:", accuracy_score(y_test, y_pred))
 #print("Classification Report:\n", classification_report(y_test, y_pred))
 
-model = keras.Sequential([keras.layers.Dense(128, activation="relu", input_shape=(X_train.shape[1],)), keras.layers.Dense(64, activation="relu"), keras.layers.Dense(4, activation="softmax")])
+#model = keras.Sequential([keras.layers.Dense(128, activation="relu", input_shape=(X_train.shape[1],)), keras.layers.Dense(64, activation="relu"), keras.layers.Dense(4, activation="softmax")])
+
+model = keras.Sequential([keras.layers.Dense(16, activation="relu", input_shape=(X_train.shape[1],)), keras.layers.Dense(8, activation="relu"), keras.layers.Dense(4, activation="softmax")])
+
 
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
@@ -84,4 +84,6 @@ print(f'\nTest accuracy: {test_acc}')
 
 #predictions = loaded_model.predict(X_test, batch_size=32, verbose=1)
 
+#tested_model_loss, tested_model_acc = loaded_model.evaluate(X_test, y_test, verbose=2)
 
+#print(f"Loaded Model Acc: {tested_model_acc}")

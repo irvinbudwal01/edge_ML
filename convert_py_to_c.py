@@ -1,16 +1,18 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # ========= CONFIGURATION =========
 
-CSV_PATH = "ai 2020.csv"   # your CSV file
+#CSV_PATH = "ai 2020.csv"   # your CSV file
+CSV_PATH = "air_quality_dataset.csv"
 
 # If your CSV has a header row with column names:
 HAS_HEADER = True
 
 # Name of the label column (can be in the middle)
-LABEL_COL_NAME = "Machine failure"   # <-- change this to your label column name
+#LABEL_COL_NAME = "Machine failure"   # <-- change this to your label column name
+LABEL_COL_NAME = "Air_Quality_Category"
 
 # EITHER:
 #   1) Explicitly list feature columns you want to use:
@@ -21,8 +23,12 @@ FEATURE_COL_NAMES = [
 # OR:
 #   2) List columns you want to DROP (besides the label),
 #      and keep all the rest as features:
+#DROP_COL_NAMES = [
+#     "UDI", "Product ID", "Machine failure",'Process temperature [K]', 'Tool wear [min]', 'Torque [Nm]', 'TWF', 'HDF'
+#]
+
 DROP_COL_NAMES = [
-     "UDI", "Product ID",
+    "SITE_ID","DATEOFF","DATEON",# "Week","Year","SO4","HNO3","K","NH4","SO2"
 ]
 
 # If your CSV has *no* header row, set HAS_HEADER = False above
@@ -32,7 +38,7 @@ FEATURE_COL_INDEXES = []    # e.g. [0, 1, 2, 3]
 DROP_COL_INDEXES = []       # e.g. [5, 6]
 
 # Output header file:
-OUT_PATH = "test_data.h"
+OUT_PATH = "test_env_data.h"
 
 # =================================
 
@@ -40,15 +46,45 @@ OUT_PATH = "test_data.h"
 def main():
     if HAS_HEADER:
         df = pd.read_csv(CSV_PATH)
+        df['DATEOFF'] = pd.to_datetime(df['DATEOFF'], errors='coerce')
+        df['DATEON'] = pd.to_datetime(df['DATEON'], errors='coerce')  
+        numeric_columns = df.columns.drop(['SITE_ID','DATEOFF','DATEON'])
+        #numeric_columns = df.columns.drop(['SITE_ID', 'DATEOFF', 'DATEON', 'Week', 'Year', 'SO4', 'HNO3', 'K', 'NH4', 'SO2']).tolist()
+        for column in numeric_columns:
+            df[column] = pd.to_numeric(df[column], errors='coerce')
+        
+
+        means = df.select_dtypes(include=['int64','float64']).mean()
+
+        df = df.fillna(means)
+
+        numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+
+        scaler = StandardScaler()
+        scaled_features = scaler.fit_transform(df[numeric_columns])
+        
+        df['Air_Quality_Index'] = np.mean(scaled_features, axis=1)
+
+        df['Air_Quality_Category'] = pd.cut(df['Air_Quality_Index'], bins=[-np.inf, -1, 0, 1, np.inf], labels=['Very Poor', 'Poor', 'Moderate', 'Good'])
+
+        X = df[numeric_columns]
+        y = df['Air_Quality_Category']
+
+        from tensorflow.keras.utils import to_categorical
+
+        y = df['Air_Quality_Category'].cat.codes.astype('int32')
+
+        X = scaled_features.astype('float32')
         le = LabelEncoder()
-        df['Type'] = le.fit_transform(df['Type'])
+        #df['Type'] = le.fit_transform(df['Type']) #for pdm dataset
+        #df['Air_Quality_Category'] = le.fit_transform(df['Air_Quality_Category'])
         print("Columns found:", list(df.columns))
 
         if LABEL_COL_NAME not in df.columns:
             raise ValueError(f"Label column '{LABEL_COL_NAME}' not found in CSV")
 
         # Label column
-        y = df[LABEL_COL_NAME].astype(np.float32)
+        #y = df[LABEL_COL_NAME].astype(np.float32)
 
         # Determine feature columns
         if FEATURE_COL_NAMES:
@@ -65,8 +101,9 @@ def main():
         if not feature_cols:
             raise ValueError("No feature columns selected!")
 
-        X = df[feature_cols].astype(np.float32)
-
+        #X = df[feature_cols].astype(np.float32)
+        
+        X = df[numeric_columns].astype(np.float32)
     else:
         # No header row: use numeric indices
         df = pd.read_csv(CSV_PATH, header=None)
@@ -88,8 +125,8 @@ def main():
         X = df.iloc[:, feat_idxs].astype(np.float32)
 
     # Convert to numpy arrays
-    X_np = X.to_numpy()
-    y_np = y.to_numpy()
+    X_np = X[:1000].to_numpy()
+    y_np = y[:1000].to_numpy()
 
     num_samples, num_features = X_np.shape
     print(f"Samples: {num_samples}, Features: {num_features}")

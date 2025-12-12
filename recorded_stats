@@ -1,0 +1,62 @@
+pdm_model: 
+	inference time: 560us (avg), 446.14 (avg)
+	accuracy: .9770
+
+pdm_student_model:
+	inference time: 61us (avg), 24.01 (avg)
+	accuracy: .9770
+
+pdm_dropped_model:
+	inference time: 531us (avg), 419.26 (avg)
+	accuracy: .9770
+
+pdm_student_dropped_model:
+	inference time: 57us (avg), 21.18 (avg)
+	accuracy: .9770
+
+
+env_model PC:
+	inference time: 2182+1312+1249+1274+1270+1399,
+	accuracy: .9810
+
+env_student_model PC:
+	inference time: 657+499+499+559+485+567
+	accuracy: .9786
+
+env_dropped_model PC:
+	inference time: 798+944+1012+822+819+936
+	accuracy: .9691
+
+env_student_dropped_model PC:
+	inference time: 507+509+503+520+660+503  	
+	accuracy: .9762
+
+KERAS MODELS:
+env_model PC:
+	accuracy: .9881
+
+env_student_model PC:
+	accuracy: .9786
+
+env_dropped_model PC:
+	accuracy: .9691
+
+env_student_dropped_model PC:
+	accuracy: .9762
+
+pdm_model PC:
+	accuracy: .9990
+
+pdm_student_model PC:
+	accuracy: .9960
+
+pdm_dropped_model PC:
+	accuracy: .9865
+
+pdm_student_dropped_model PC:
+	accuracy: .9835
+
+
+
+power draw between models does not change as confirmed by ESP32-WROOM
+upload time over elegantOTA also has very slight changes between models, practically unnoticeable, though mileage may vary 
